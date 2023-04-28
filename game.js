@@ -1,5 +1,7 @@
+//variables para trabajar con canvas
 const canvas = document.querySelector('#game');
-const game = canvas.getContext('2d');
+const game = canvas.getContext('2d'); //bidimensional
+//variables para manipular el DOM
 const btnUp = document.querySelector('#up');
 const btnLeft = document.querySelector('#left');
 const btnRight = document.querySelector('#right');
@@ -10,14 +12,15 @@ const spanRecord = document.querySelector('#record');
 const pResult = document.querySelector('#result');
 //const num = document.querySelector('#num');
 
-let canvasSize;
-let elementsSize;
-let level = 0; //primera posición del array
-let lives = 3;
+//variables que vamos a usar dentro de las funciones
+let canvasSize; //tamaño del canvas
+let elementsSize; // tamaño del elemento
+let level = 0; //primera posición del array niveles
+let lives = 3; // vidas que tiene el jugador
 
-let timeStart;
-let timePlayer;
-let timeInterval;
+let timeStart; //tiempo para empezar
+let timePlayer; //tiempo de juego
+let timeInterval; //
 
 //variable const se puede modificar su valor porque es un objeto y estamos modificando sus propiedades
 const playerPosition = {
@@ -28,10 +31,10 @@ const giftPosition = {
     x: undefined,
     y: undefined,
 }
-let enemyPositions = [];
+let enemyPositions = []; //posicion del enemigo
 
-window.addEventListener('load', setCanvasSize);
-window.addEventListener('resive', setCanvasSize);
+window.addEventListener('load', setCanvasSize); //escuchando el window para cargar el tamaño del canvas
+window.addEventListener('resize', setCanvasSize); //para recargar
 
 //para controlar los decimales
 function fixNumber(n) {
@@ -45,15 +48,13 @@ function setCanvasSize() {
     } else {
         canvasSize = window.innerHeight * 0.75;
     }
-
-//canvas = Number(canvasSize.toFixed(2));    
+canvasSize = Number(canvasSize.toFixed(0));
 canvas.setAttribute('width', canvasSize);
 canvas.setAttribute('height', canvasSize);
 
 elementsSize = fixNumber(canvasSize / 10);
 playerPosition.x = undefined;
 playerPosition.y = undefined;
-
 startGame();
 }
 
@@ -69,7 +70,7 @@ if (!map) {
 }
 if (!timeStart) {
     timeStart = Date.now();
-    //timeInterval = setInterval(showTime, 1);
+    timeInterval = setInterval(showTime,100);
     showRecord();
 }
 //el string los limpiamos de espacios vacios con la funcion trim(), luego creamos un arreglo con salto de linea con el split que nos va a dar las filas
@@ -77,9 +78,8 @@ const mapRows = map.trim().split('\n');
 //apartir del array de filas aplicando el metodo map puedo obtener cada string y aplicarle trim y split para que me den los arreglos con cada fila
 const mapCols = mapRows.map(row => row.trim().split(''));//array bidimencional
 //console.log({map, mapRows, mapCols});
-
-showLives();
-enemyPositions = [];
+showLives(); //funcion que genera las vidas
+enemyPositions = []; //posicion de los enemigos
 game.clearRect(0,0, canvasSize,canvasSize);
 //render de cada uno de los elementos
 mapCols.forEach((row, rowI) => {
@@ -95,10 +95,10 @@ mapCols.forEach((row, rowI) => {
             console.log(playerPosition);
         }
     } else if (col == 'I') {
-        giftPosition.x = posX;
-        giftPosition.y = posY;
+            giftPosition.x = posX;
+            giftPosition.y = posY;
     } else if (col == 'X') {
-        enemyPositions.push({
+            enemyPositions.push({
             x: posX,
             y: posY,
         });
@@ -112,29 +112,31 @@ mapCols.forEach((row, rowI) => {
 
 function movePlayer() {
     //toFixed(3)para que llegue a tres decimales
+    //hay un solo regalo
     const giftCollisionX = playerPosition.x.toFixed(3) == giftPosition.x.toFixed(3);
     const giftCollisionY = playerPosition.y.toFixed(3) == giftPosition.y.toFixed(3);
-    const giftCollision = giftCollisionX && giftCollisionY;
+    const giftCollision = giftCollisionX && giftCollisionY;//si ambas condiciones coinciden es true detecta la colision
     
     if (giftCollision) {
         //funcion para cambiar de nivel
         levelWin();
     }
     const enemyCollision = enemyPositions.find(enemy => {
-        const enemyCollisionX = enemy.x.toFixed(3) == playerPosition.x
-        const enemyCollisionY = enemy.y.toFixed(3) == playerPosition.y
+        const enemyCollisionX = enemy.x.toFixed(3) == playerPosition.x.toFixed(3);
+        const enemyCollisionY = enemy.y.toFixed(3) == playerPosition.y.toFixed(3);
         return enemyCollisionX && enemyCollisionY;
     });
     if (enemyCollision) {
         levelFail();
     }
-    game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
+    game.fillText(emojis['PLAYER'], playerPosition.x.toFixed(3), playerPosition.y.toFixed(3));
 }   //cuando ganas
     function levelWin() {
         console.log('Subiste de Nivel');
         level++;
         startGame();
-    }//cuando pierde
+    }
+    //cuando pierde
     function levelFail() {
         console.log('Chocaste contra un enemigo');
         lives--;
@@ -148,14 +150,15 @@ function movePlayer() {
         playerPosition.y = undefined;
         startGame();
     }
+
     function gameWin() {
         console.log('¡Terminaste el juego!');
         clearInterval(timeInterval);
 
         const recordTime = localStorage.getItem('record_time');
         const playerTime = Date.now() - timeStart;
-
-        if (recordTime) {
+        
+        if (recordTime) {   
             if (recordTime >= playerTime) {
             localStorage.setItem('record_time', playerTime);
             pResult.innerHTML = 'SUPERASTE EL RECORD :)';
@@ -163,13 +166,11 @@ function movePlayer() {
             pResult.innerHTML = 'lo siento, no superaste el records :(';
             }
         } else {
-        localStorage.setItem('record_time', playerTime);
-        pResult.innerHTML = 'Primera vez? Muy bien, pero ahora trata de superar tu tiempo :)';
+            localStorage.setItem('record_time', playerTime);
+            pResult.innerHTML = 'Primera vez? Muy bien, pero ahora trata de superar tu tiempo :)';
         }
-
-    console.log({recordTime, playerTime});
+            console.log({recordTime, playerTime});
 }
-
     function showLives() {
         const heartsArray = Array(lives).fill(emojis['HEART']);
         //console.log(heartsArray);
@@ -180,10 +181,10 @@ function movePlayer() {
         spanTime.innerHTML = Date.now() - timeStart;
     }
     function showRecord() {
-        spanRecord.innerHTML = localStorage.getItem('record_time');
+        spanRecord.innerHTML= localStorage.getItem('record_time');
     }
 
-
+//EVENTOS CLICK Y KEYDOWN
 //para saber hacia donde se quiere mover el jugador
 document.addEventListener('keydown', moveByKeys);
 btnUp.addEventListener('click', moveUp);
@@ -238,6 +239,8 @@ function moveDown() {
     }
 }
 
+
+
 //function numbers() {
   //  console.log('Soy un cero');
 //}
@@ -249,7 +252,7 @@ function moveDown() {
 
 
 
- // window.innerHeight
+  //window.innerHeight
   // window.innerWidth
 
   // game.fillRect(0,50,100,100);
